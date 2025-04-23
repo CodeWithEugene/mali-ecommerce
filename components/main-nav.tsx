@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
 import { CountrySelector } from "@/components/country-selector"
 import { useCart } from "@/contexts/cart-context"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function MainNav() {
   const [isOpen, setIsOpen] = React.useState(false)
@@ -114,6 +115,9 @@ export function MainNav() {
             <Input type="search" placeholder="Search products..." className="w-[200px] lg:w-[300px] pl-8" />
           </div>
 
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* Country/Currency Selector */}
           <CountrySelector />
 
@@ -176,6 +180,9 @@ export function MainNav() {
 
         {!isDesktop && (
           <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Mobile Currency Selector */}
             <CountrySelector />
 

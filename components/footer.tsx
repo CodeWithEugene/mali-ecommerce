@@ -6,7 +6,7 @@ import { CountrySelector } from "@/components/country-selector"
 
 export function Footer() {
   return (
-    <footer className="bg-muted/40 border-t">
+    <footer className="bg-background border-t">
       <div className="container px-4 md:px-6 py-12 md:py-16">
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
           <div className="space-y-4 lg:col-span-2">
@@ -89,7 +89,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-foreground">
-                  Contact
+                  Contact Us
                 </Link>
               </li>
               <li>

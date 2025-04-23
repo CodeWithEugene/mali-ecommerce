@@ -27,7 +27,7 @@ export default function RootLayout({
         <AuthProvider>
           <CurrencyProvider>
             <CartProvider>
-              <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+              <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
                 {children}
                 <Toaster />
               </ThemeProvider>
