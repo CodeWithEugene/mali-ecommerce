@@ -30,11 +30,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
 import { CountrySelector } from "@/components/country-selector"
+import { useCart } from "@/contexts/cart-context"
 
 export function MainNav() {
   const [isOpen, setIsOpen] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")
-  const [cartCount, setCartCount] = React.useState(3)
+  const { itemCount } = useCart()
   const { user, logout } = useAuth()
   const router = useRouter()
 
@@ -163,9 +164,9 @@ export function MainNav() {
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
+              {itemCount > 0 && (
                 <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                  {cartCount}
+                  {itemCount}
                 </Badge>
               )}
               <span className="sr-only">Cart</span>
@@ -181,9 +182,9 @@ export function MainNav() {
             <Link href="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
-                {cartCount > 0 && (
+                {itemCount > 0 && (
                   <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                    {cartCount}
+                    {itemCount}
                   </Badge>
                 )}
                 <span className="sr-only">Cart</span>
@@ -283,7 +284,7 @@ export function MainNav() {
                           router.push("/cart")
                         }}
                       >
-                        Cart ({cartCount})
+                        Cart ({itemCount})
                       </Button>
                     </div>
                   </div>

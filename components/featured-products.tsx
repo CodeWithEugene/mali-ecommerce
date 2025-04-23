@@ -9,10 +9,12 @@ import { Badge } from "@/components/ui/badge"
 import { ShoppingCart, Heart } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { useCurrency } from "@/contexts/currency-context"
+import { useCart } from "@/contexts/cart-context"
 
 export function FeaturedProducts() {
   const { toast } = useToast()
   const { formatPrice } = useCurrency()
+  const { addItem } = useCart()
 
   const [products] = useState([
     {
@@ -58,6 +60,17 @@ export function FeaturedProducts() {
   ])
 
   const handleAddToCart = (product) => {
+    addItem(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        variant: null,
+      },
+      1,
+    )
+
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,

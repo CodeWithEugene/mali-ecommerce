@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from "@/components/auth-provider"
 import { useCurrency } from "@/contexts/currency-context"
+import { useCart } from "@/contexts/cart-context"
 
 export function ProductDetail({ id }: { id: string }) {
   const { toast } = useToast()
@@ -19,6 +20,7 @@ export function ProductDetail({ id }: { id: string }) {
   const { formatPrice } = useCurrency()
   const [quantity, setQuantity] = useState(1)
   const [activeImage, setActiveImage] = useState(0)
+  const { addItem } = useCart()
 
   // Mock product data - in a real app, this would be fetched from an API
   const products = {
@@ -153,10 +155,16 @@ export function ProductDetail({ id }: { id: string }) {
   }
 
   const handleAddToCart = () => {
-    toast({
-      title: "Added to cart",
-      description: `${quantity} x ${product.name} has been added to your cart.`,
-    })
+    addItem(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images[0],
+        variant: null,
+      },
+      quantity,
+    )
   }
 
   const handleAddToWishlist = () => {

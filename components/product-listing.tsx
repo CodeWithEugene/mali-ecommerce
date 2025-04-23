@@ -25,10 +25,12 @@ import {
 } from "@/components/ui/sheet"
 import { useToast } from "@/components/ui/use-toast"
 import { useCurrency } from "@/contexts/currency-context"
+import { useCart } from "@/contexts/cart-context"
 
 export function ProductListing() {
   const { toast } = useToast()
   const { formatPrice } = useCurrency()
+  const { addItem } = useCart()
 
   const [products] = useState([
     {
@@ -176,10 +178,16 @@ export function ProductListing() {
   }
 
   const handleAddToCart = (product) => {
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    })
+    addItem(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        variant: null,
+      },
+      1,
+    )
   }
 
   const handleAddToWishlist = (product) => {

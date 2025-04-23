@@ -7,72 +7,55 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
-import { Minus, Plus, Trash2, ArrowRight } from "lucide-react"
+import { Minus, Plus, Trash2, ArrowRight, ShoppingBag } from "lucide-react"
 import { useCurrency } from "@/contexts/currency-context"
+import { useCart } from "@/contexts/cart-context"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { ShieldCheck } from "lucide-react"
 
 export function ShoppingCart() {
   const { formatPrice } = useCurrency()
-
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Modern Lounge Chair",
-      price: 29999, // Price in KSh
-      image: "/placeholder.svg?height=200&width=200",
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: "Minimalist Coffee Table",
-      price: 19999, // Price in KSh
-      image: "/placeholder.svg?height=200&width=200",
-      quantity: 1,
-    },
-    {
-      id: 9,
-      name: "Sectional Sofa",
-      price: 129999, // Price in KSh
-      image: "/placeholder.svg?height=200&width=200",
-      quantity: 1,
-    },
-  ])
+  const {
+    items,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    subtotal,
+    calculateDiscount,
+    calculateShipping,
+    calculateTax,
+    calculateTotal,
+    applyPromoCode,
+    activePromoCode,
+  } = useCart()
 
   const [promoCode, setPromoCode] = useState("")
-  const [promoApplied, setPromoApplied] = useState(false)
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false)
 
-  const incrementQuantity = (id) => {
-    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity: item.quantity + 1 } : item)))
+  const handleApplyPromoCode = () => {
+    if (!promoCode) return
+
+    setIsApplyingPromo(true)
+    // Simulate network delay
+    setTimeout(() => {
+      applyPromoCode(promoCode)
+      setIsApplyingPromo(false)
+    }, 800)
   }
 
-  const decrementQuantity = (id) => {
-    setCartItems(
-      cartItems.map((item) => (item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item)),
-    )
-  }
-
-  const removeItem = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
-  }
-
-  const applyPromoCode = () => {
-    if (promoCode.toLowerCase() === "discount10") {
-      setPromoApplied(true)
-    }
-  }
-
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
-
-  const discount = promoApplied ? subtotal * 0.1 : 0
-  const shipping = subtotal > 50000 ? 0 : 2999 // Free shipping over KSh 50,000
-  const total = subtotal - discount + shipping
+  const discount = calculateDiscount()
+  const shipping = calculateShipping()
+  const tax = calculateTax()
+  const total = calculateTotal()
 
   return (
     <div className="container px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
-      {cartItems.length === 0 ? (
+      {items.length === 0 ? (
         <div className="text-center py-12">
-          <h2 className="text-2xl font-semibold mb-4">Your cart is empty</h2>
+          <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h2 className="text-2xl font-semibold mt-4 mb-4">Your cart is empty</h2>
           <p className="text-muted-foreground mb-8">Looks like you haven't added any products to your cart yet.</p>
           <Button asChild size="lg">
             <Link href="/products">Continue Shopping</Link>
@@ -81,23 +64,24 @@ export function ShoppingCart() {
       ) : (
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-4">
-            {cartItems.map((item) => (
+            {items.map((item) => (
               <div
-                key={item.id}
+                key={`${item.id}-${item.variant || ""}`}
                 className="flex flex-col sm:flex-row items-start sm:items-center gap-4 border rounded-lg p-4"
               >
-                <div className="relative h-24 w-24 rounded-md overflow-hidden">
+                <div className="relative h-24 w-24 rounded-md overflow-hidden flex-shrink-0">
                   <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium truncate">{item.name}</h3>
+                  {item.variant && <p className="text-sm text-muted-foreground mb-1">Variant: {item.variant}</p>}
                   <p className="text-sm text-muted-foreground">Unit Price: {formatPrice(item.price)}</p>
                   <div className="flex items-center mt-2">
                     <Button
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => decrementQuantity(item.id)}
+                      onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant)}
                       disabled={item.quantity <= 1}
                     >
                       <Minus className="h-3 w-3" />
@@ -108,7 +92,7 @@ export function ShoppingCart() {
                       variant="outline"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => incrementQuantity(item.id)}
+                      onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant)}
                     >
                       <Plus className="h-3 w-3" />
                       <span className="sr-only">Increase quantity</span>
@@ -121,7 +105,7 @@ export function ShoppingCart() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground"
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.id, item.variant)}
                   >
                     <Trash2 className="h-4 w-4" />
                     <span className="sr-only">Remove item</span>
@@ -134,7 +118,7 @@ export function ShoppingCart() {
               <Button variant="outline" asChild>
                 <Link href="/products">Continue Shopping</Link>
               </Button>
-              <Button variant="ghost" onClick={() => setCartItems([])}>
+              <Button variant="ghost" onClick={clearCart}>
                 Clear Cart
               </Button>
             </div>
@@ -150,15 +134,19 @@ export function ShoppingCart() {
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
-                {promoApplied && (
+                {discount > 0 && (
                   <div className="flex justify-between text-green-600">
-                    <span>Discount (10%)</span>
+                    <span>Discount {activePromoCode && `(${activePromoCode})`}</span>
                     <span>-{formatPrice(discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
                   <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Tax (16% VAT)</span>
+                  <span>{formatPrice(tax)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-medium text-lg">
@@ -169,12 +157,27 @@ export function ShoppingCart() {
                 <div className="pt-4 space-y-2">
                   <div className="text-sm font-medium">Promo Code</div>
                   <div className="flex gap-2">
-                    <Input placeholder="Enter code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} />
-                    <Button onClick={applyPromoCode} disabled={promoApplied}>
-                      Apply
+                    <Input
+                      placeholder="Enter code"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      disabled={!!activePromoCode || isApplyingPromo}
+                    />
+                    <Button
+                      onClick={handleApplyPromoCode}
+                      disabled={!!activePromoCode || !promoCode || isApplyingPromo}
+                    >
+                      {isApplyingPromo ? "Applying..." : "Apply"}
                     </Button>
                   </div>
-                  {promoApplied && <p className="text-xs text-green-600">Promo code applied successfully!</p>}
+                  {activePromoCode && (
+                    <Alert variant="default" className="bg-green-50 text-green-700 border-green-200">
+                      <AlertTitle className="flex items-center">
+                        <ShieldCheck className="h-4 w-4 mr-2" /> Promo code applied
+                      </AlertTitle>
+                      <AlertDescription>Your discount has been applied to the order.</AlertDescription>
+                    </Alert>
+                  )}
                 </div>
               </CardContent>
               <CardFooter>
